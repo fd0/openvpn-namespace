@@ -6,7 +6,7 @@ import shlex
 import subprocess
 
 
-NAMESPACE = "ns1"
+NAMESPACE = "ipredator"
 DEBUG_ENV = False
 
 
@@ -101,29 +101,8 @@ if script_type == "up":
         # ignore if namespace exists
         pass
 
-    # flush routing table
-    nsexec("ip route flush table all")
-
     # configure firewall in namespace
-    nsexec("iptables -F")
-    nsexec("iptables -I INPUT -j DROP")
-    nsexec("iptables -I FORWARD -j DROP")
-    nsexec("iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT")
-    nsexec("iptables -I INPUT -i lo -j ACCEPT")
-    nsexec("iptables -I OUTPUT -o lo -j ACCEPT")
-    nsexec("iptables -I OUTPUT -d 10.0.0.0/8 -j DROP")
-    nsexec("iptables -I OUTPUT -d 172.16.0.0/12 -j DROP")
-    nsexec("iptables -I OUTPUT -d 192.168.0.0/16 -j DROP")
-    nsexec("iptables -I OUTPUT -o ? -j ACCEPT", (device,))
-    nsexec("iptables -P OUTPUT DROP")
-    nsexec("ip6tables -F")
-    nsexec("ip6tables -I INPUT -j DROP")
-    nsexec("ip6tables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT")
-    nsexec("ip6tables -I INPUT -i lo -j ACCEPT")
-    nsexec("ip6tables -I FORWARD -j DROP")
-    nsexec("ip6tables -I OUTPUT -j DROP")
-    nsexec("ip6tables -I OUTPUT -o lo -j ACCEPT")
-    nsexec("ip6tables -I OUTPUT -o ? -j ACCEPT", (device,))
+    nsexec("nft -f nftables.conf")
 
     # create directory for resolv.conf
     namespace_dir = os.path.join("/etc/netns", NAMESPACE)
